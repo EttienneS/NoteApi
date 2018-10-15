@@ -60,7 +60,7 @@ namespace NoteApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /Todo
+        ///     POST /Note
         ///     {
         ///        "id": 1,
         ///        "title": "Note title",
@@ -75,14 +75,13 @@ namespace NoteApi.Controllers
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public void Post([FromBody] Note note)
+        public ActionResult<Note> Post([FromBody] Note note)
         {
             _context.Notes.Add(note);
             _context.SaveChanges();
 
 
-            //return note;
-          // return CreatedAtRoute("Get", new { id = note.Id }, note);
+            return CreatedAtRoute("Get", new { id = note.Id }, note);
         }
 
         /// <summary>
@@ -91,7 +90,7 @@ namespace NoteApi.Controllers
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /Todo
+        ///     POST /Note
         ///     {
         ///        "id": 1,
         ///        "title": "Note title",
@@ -104,17 +103,15 @@ namespace NoteApi.Controllers
         /// <returns>A newly created Note</returns>
         /// <response code="201">Returns the newly created item</response>
         /// <response code="400">If the item is null</response>            
-        [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] Note note)
+        public ActionResult<Note> Put(int id, [FromBody] Note note)
         {
             _context.Notes.Add(note);
             _context.SaveChanges();
 
-            //return note;
-           
+            return CreatedAtRoute("Get", new { id = note.Id }, note);
         }
 
 
