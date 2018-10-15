@@ -8,11 +8,24 @@ namespace NoteApi.Models
 {
     public class Note
     {
-        public long Id { get; set; }
+        public Note(){}
+
+        public Note(string title)
+        {
+            Title = title;
+        }
+
+
+        public int Id { get; set; }
 
         [Required]
         public string Title { get; set; }
 
         public string Content { get; set; }
+
+        public override string ToString()
+        {
+            return $"{Id} - {Title}";
+        }
     }
 }

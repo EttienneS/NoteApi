@@ -25,13 +25,6 @@ namespace NoteApi.Controllers
         public NotesController(NoteContext context)
         {
             _context = context;
-
-            if (_context.Notes.Count() == 0)
-            {
-                // Create a new Note if collection is empty,
-                // which means you can't delete all Notes.
-                Post(new Note { Title = "Test Note 1" });
-            }
         }
 
         /// <summary>
@@ -81,7 +74,7 @@ namespace NoteApi.Controllers
             _context.SaveChanges();
 
 
-            return CreatedAtRoute("Get", new { id = note.Id }, note);
+            return Get(note.Id);
         }
 
         /// <summary>
@@ -108,10 +101,15 @@ namespace NoteApi.Controllers
         [HttpPut("{id}")]
         public ActionResult<Note> Put(int id, [FromBody] Note note)
         {
-            _context.Notes.Add(note);
+            Delete(id);
+
+            note.Id = id;
+
+            Post(note);
+
             _context.SaveChanges();
 
-            return CreatedAtRoute("Get", new { id = note.Id }, note);
+            return Get(note.Id);
         }
 
 
@@ -122,7 +120,7 @@ namespace NoteApi.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
-            _context.Notes.Remove(Get(id).Value);
+            _context.Notes.Remove(_context.Notes.First(n => n.Id == id));
             _context.SaveChanges();
         }
     }
