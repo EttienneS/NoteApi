@@ -34,9 +34,9 @@ namespace NoteApiTests
             using (var context = new NoteContext(options))
             {
                 var controller = new NotesController(context);
-                controller.Post(new Note("Test1"));
-                controller.Post(new Note("Test2"));
-                controller.Post(new Note("Test3"));
+                controller.Post(new Note() { Title = "Test1" });
+                controller.Post(new Note() { Title = "Test2" });
+                controller.Post(new Note() { Title = "Test3" });
             }
 
             using (var context = new NoteContext(options))
@@ -55,9 +55,9 @@ namespace NoteApiTests
             using (var context = new NoteContext(options))
             {
                 var controller = new NotesController(context);
-                id1 = controller.Post(new Note("Test1")).Value.Id;
-                id2 = controller.Post(new Note("Test2")).Value.Id;
-                id3 = controller.Post(new Note("Test3")).Value.Id;
+                id1 = controller.Post(new Note() { Title = "Test1" }).Value.Id;
+                id2 = controller.Post(new Note() { Title = "Test2" }).Value.Id;
+                id3 = controller.Post(new Note() { Title = "Test3" }).Value.Id;
             }
 
             using (var context = new NoteContext(options))
@@ -77,10 +77,10 @@ namespace NoteApiTests
             using (var context = new NoteContext(options))
             {
                 var controller = new NotesController(context);
-                controller.Post(new Note("Test1"));
-                controller.Post(new Note("Test2"));
-                controller.Post(new Note("Test3"));
-                controller.Put(1, new Note("TestX"));
+                controller.Post(new Note() { Title = "Test1" });
+                controller.Post(new Note() { Title = "Test2" });
+                controller.Post(new Note() { Title = "Test3" });
+                controller.Put(1, new Note() { Title = "TestX" });
             }
 
             using (var context = new NoteContext(options))
@@ -99,9 +99,9 @@ namespace NoteApiTests
             using (var context = new NoteContext(options))
             {
                 var controller = new NotesController(context);
-                controller.Post(new Note("Test1"));
-                controller.Post(new Note("Test2"));
-                controller.Post(new Note("Test3"));
+                controller.Post(new Note() { Title = "Test1" });
+                controller.Post(new Note() { Title = "Test2" });
+                controller.Post(new Note() { Title = "Test3" });
             }
 
             using (var context = new NoteContext(options))

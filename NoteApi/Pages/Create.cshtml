@@ -1,0 +1,28 @@
+﻿@page
+@model NoteApi.Pages.CreateModel
+
+@{
+    ViewData["Title"] = "Create New Note";
+}
+
+<h4 class="text-shadow">Create your new note:</h4>
+<hr />
+
+<div asp-validation-summary="All"></div>
+<form method="POST">
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <span class="input-group-text">Title:</span>
+        </div>
+        <input type="text" class="form-control" aria-label="Title" asp-for="Note.Title" />
+    </div>
+    <hr />
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <span class="input-group-text">Content:</span>
+        </div>
+        <textarea class="form-control" aria-label="Content" asp-for="Note.Content"></textarea>
+    </div>
+    <hr />
+    <input type="submit" class="btn btn-xl btn-light mr-4" title="Go!" />
+</form>
