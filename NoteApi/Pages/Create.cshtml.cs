@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using NoteApi.Controllers;
 using NoteApi.Models;
 using System;
 using System.Collections.Generic;
@@ -28,9 +29,8 @@ namespace NoteApi.Pages
                 return Page();
             }
 
-            _db.Notes.Add(Note);
-            await _db.SaveChangesAsync();
-            return RedirectToPage("/Create", Note);
+            new NotesController(_db).Post(Note);
+            return RedirectToPage("/Create");
         }
     }
 }

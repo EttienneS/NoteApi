@@ -73,7 +73,6 @@ namespace NoteApi.Controllers
             _context.Notes.Add(note);
             _context.SaveChanges();
 
-
             return Get(note.Id);
         }
 
@@ -125,4 +124,3 @@ namespace NoteApi.Controllers
         }
     }
 }
- 
