@@ -8,13 +8,10 @@ namespace NoteApi.Models
 {
     public class Note
     {
-        public Note(){}
-
         public Note(string title)
         {
             Title = title;
         }
-
 
         public int Id { get; set; }
 
