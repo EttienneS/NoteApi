@@ -79,7 +79,7 @@ namespace NoteApi
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Note API V1");
                 // serve swagger UI as the app root
-                c.RoutePrefix = string.Empty;  
+                c.RoutePrefix = string.Empty;
             });
 
             if (env.IsDevelopment())
