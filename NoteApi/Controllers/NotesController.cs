@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using NoteApi.Models;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace NoteApi.Controllers
 {
@@ -21,10 +20,29 @@ namespace NoteApi.Controllers
         /// Constructs the note controller class and sets up
         /// some basic notes if there are none
         /// </summary>
-        /// <param name="context"></param> 
+        /// <param name="context"></param>
         public NotesController(NoteContext context)
         {
             _context = context;
+        }
+
+        /// <summary>
+        /// Deletes a specific Note.
+        /// </summary>
+        /// <param name="id"></param>
+        [HttpDelete("{id}")]
+        public ActionResult Delete(int id)
+        {
+            var note = GetNoteById(id);
+            if (note == null)
+            {
+                return NotFound();
+            }
+
+            _context.Notes.Remove(note);
+            _context.SaveChanges();
+
+            return NoContent();
         }
 
         /// <summary>
@@ -33,18 +51,86 @@ namespace NoteApi.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<Note>> Get()
         {
-            return _context.Notes;
-        }
+            if (_context.Notes == null || !_context.Notes.Any())
+            {
+                return NotFound();
+            }
 
+            return Ok(_context.Notes);
+        }
 
         /// <summary>
         /// Deletes a specific Note.
         /// </summary>
-        /// <param name="id"></param>    
-        [HttpGet("{id}")]
+        /// <param name="id"></param>
+        [HttpGet("{id}", Name = "GetNote")]
         public ActionResult<Note> Get(int id)
         {
-            return _context.Notes.First(n => n.Id == id);
+            var note = GetNoteById(id);
+
+            if (note == null)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return Ok(note);
+            }
+        }
+
+        /// <summary>
+        /// Update a Note with a given ID.
+        /// </summary>
+        /// <remarks>
+        /// Sample request:
+        ///
+        ///     PATCH /UpdateNoteDto
+        ///     {
+        ///        "title": "Note title",
+        ///        "content": "Content of the note"
+        ///     }
+        ///
+        /// </remarks>
+        /// <param name="id"></param>
+        /// <param name="patchDoc"></param>
+        /// <response code="204">Returns nothing</response>
+        /// <response code="400">If the item is null</response>
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [HttpPatch("{id}")]
+        public ActionResult Patch(int id, [FromBody] JsonPatchDocument<UpdateNoteDto> patchDoc)
+        {
+            if (patchDoc == null)
+            {
+                return BadRequest();
+            }
+
+
+            var originalNote = GetNoteById(id);
+
+            if (originalNote == null)
+            {
+                return NotFound();
+            }
+
+            var noteToPatch = new UpdateNoteDto()
+            {
+                Title = originalNote.Title,
+                Content = originalNote.Content,
+            };
+
+            patchDoc.ApplyTo(noteToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            originalNote.Title = noteToPatch.Title;
+            originalNote.Content = noteToPatch.Content;
+
+            _context.SaveChanges();
+            return NoContent();
         }
 
         /// <summary>
@@ -64,28 +150,36 @@ namespace NoteApi.Controllers
         /// <param name="note"></param>
         /// <returns>A newly created Note</returns>
         /// <response code="201">Returns the newly created item</response>
-        /// <response code="400">If the item is null</response>            
+        /// <response code="400">If the item is null or invalid</response>
         [HttpPost]
         [ProducesResponseType(201)]
         [ProducesResponseType(400)]
-        public ActionResult<Note> Post([FromBody] Note note)
+        public ActionResult<Note> Post([FromBody] CreateNoteDto note)
         {
-            _context.Notes.Add(note);
+            if (note == null)
+            {
+                return BadRequest();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var noteEntity = _context.Notes.Add(new Note(note));
             _context.SaveChanges();
 
-
-            return Get(note.Id);
+            return CreatedAtRoute("GetNote", new { id = noteEntity.Entity.Id }, noteEntity.Entity);
         }
 
         /// <summary>
-        /// Insert a Note at a given ID.
+        /// Update a Note with a given ID.
         /// </summary>
         /// <remarks>
         /// Sample request:
         ///
-        ///     POST /Note
+        ///     PUT /Note
         ///     {
-        ///        "id": 1,
         ///        "title": "Note title",
         ///        "content": "Content of the note"
         ///     }
@@ -93,36 +187,41 @@ namespace NoteApi.Controllers
         /// </remarks>
         /// <param name="id"></param>
         /// <param name="note"></param>
-        /// <returns>A newly created Note</returns>
-        /// <response code="201">Returns the newly created item</response>
-        /// <response code="400">If the item is null</response>            
-        [ProducesResponseType(201)]
+        /// <response code="204">Returns nothing</response>
+        /// <response code="400">If the item is null</response>
+        [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [HttpPut("{id}")]
-        public ActionResult<Note> Put(int id, [FromBody] Note note)
+        public ActionResult Put(int id, [FromBody] UpdateNoteDto note)
         {
-            Delete(id);
+            if (note == null)
+            {
+                return BadRequest();
+            }
 
-            note.Id = id;
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
 
-            Post(note);
+            var originalNote = GetNoteById(id);
+
+            if (originalNote == null)
+            {
+                return NotFound();
+            }
+
+            originalNote.Title = note.Title;
+            originalNote.Content = note.Content;
 
             _context.SaveChanges();
 
-            return Get(note.Id);
+            return NoContent();
         }
 
-
-        /// <summary>
-        /// Deletes a specific Note.
-        /// </summary>
-        /// <param name="id"></param>     
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        private Note GetNoteById(int id)
         {
-            _context.Notes.Remove(_context.Notes.First(n => n.Id == id));
-            _context.SaveChanges();
+            return _context.Notes.FirstOrDefault(n => n.Id == id);
         }
     }
 }
- 
