@@ -71,7 +71,7 @@ namespace NoteApi.Controllers
         /// <summary>
         /// Get a specific Note.
         /// </summary>
-        /// <param name = "id" ></ param >
+        /// <param name = "id" >The ID of the note you want</param >
         [HttpGet("{id}", Name = "GetNote")]
         public ActionResult<NoteDto> Get(int id)
         {
