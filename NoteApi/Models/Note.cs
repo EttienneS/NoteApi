@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace NoteApi.Models
 {
     public class Note
     {
-
         public Note(string title)
         {
             Title = title;
@@ -20,12 +15,14 @@ namespace NoteApi.Models
             Content = note.Content;
         }
 
+        [MaxLength(250)]
         public string Content { get; set; }
 
         public int Id { get; set; }
 
-        [Required]
+        [Required, MaxLength(50)]
         public string Title { get; set; }
+
         public override string ToString()
         {
             return $"{Id} - {Title}";
