@@ -11,6 +11,7 @@ namespace NoteApi.Models
 
         public NoteContext(DbContextOptions<NoteContext> options) : base(options)
         {
+            Database.Migrate();
         }
 
         public DbSet<Note> Notes { get; set; }
