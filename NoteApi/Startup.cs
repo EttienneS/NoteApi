@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using NoteApi.Entities;
 using NoteApi.Models;
+using NoteApi.Services;
 using Swashbuckle.AspNetCore.Swagger;
 using System;
 using System.IO;
@@ -56,6 +58,10 @@ namespace NoteApi
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
+
+            
+
+            services.AddScoped<INoteRepository, NoteRepository>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -85,6 +91,15 @@ namespace NoteApi
             }
 
             app.UseHttpsRedirection();
+
+            AutoMapper.Mapper.Initialize(cfg =>
+            {
+                cfg.CreateMap<Note, NoteDto>();
+                cfg.CreateMap<CreateNoteDto, Note>();
+                cfg.CreateMap<UpdateNoteDto, Note>();
+                cfg.CreateMap<Note, UpdateNoteDto>();
+            });
+
             app.UseMvc();
         }
     }

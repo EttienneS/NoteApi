@@ -1,19 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NoteApi.Models;
+using System.ComponentModel.DataAnnotations;
 
-namespace NoteApi.Models
+namespace NoteApi.Entities
 {
     public class Note
     {
-        public Note(string title)
-        {
-            Title = title;
-        }
-
-        public Note(CreateNoteDto note)
-        {
-            Title = note.Title;
-            Content = note.Content;
-        }
 
         [MaxLength(250)]
         public string Content { get; set; }

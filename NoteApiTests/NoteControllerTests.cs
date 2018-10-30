@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using NoteApi.Controllers;
+using NoteApi.Entities;
 using NoteApi.Models;
 using System;
 using System.Linq;

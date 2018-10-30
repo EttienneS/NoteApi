@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.JsonPatch;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using NoteApi.Entities;
 using NoteApi.Models;
+using NoteApi.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,16 +18,16 @@ namespace NoteApi.Controllers
     [ApiController]
     public class NotesController : ControllerBase
     {
-        private readonly NoteContext _context;
+        private readonly INoteRepository _noteRepository;
 
         /// <summary>
         /// Constructs the note controller class and sets up
         /// some basic notes if there are none
         /// </summary>
-        /// <param name="context"></param>
-        public NotesController(NoteContext context)
+        /// <param name = "context" ></ param >
+        public NotesController(INoteRepository noteRepository)
         {
-            _context = context;
+            _noteRepository = noteRepository;
         }
 
         /// <summary>
@@ -33,14 +37,18 @@ namespace NoteApi.Controllers
         [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
-            var note = GetNoteById(id);
+            var note = _noteRepository.GetNote(id);
             if (note == null)
             {
                 return NotFound();
             }
 
-            _context.Notes.Remove(note);
-            _context.SaveChanges();
+            _noteRepository.Delete(note);
+
+            if (!_noteRepository.Save())
+            {
+                return StatusCode(500, "A problem happened while saving your request");
+            }
 
             return NoContent();
         }
@@ -49,32 +57,32 @@ namespace NoteApi.Controllers
         /// Get all notes.
         /// </summary>
         [HttpGet]
-        public ActionResult<IEnumerable<Note>> Get()
+        public ActionResult<IEnumerable<NoteDto>> Get()
         {
-            if (_context.Notes == null || !_context.Notes.Any())
+            var notes = _noteRepository.GetNotes();
+            if (notes == null || !notes.Any())
             {
                 return NotFound();
             }
 
-            return Ok(_context.Notes);
+            return Ok(Mapper.Map<IEnumerable<NoteDto>>(notes));
         }
 
         /// <summary>
-        /// Deletes a specific Note.
+        /// Get a specific Note.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name = "id" ></ param >
         [HttpGet("{id}", Name = "GetNote")]
-        public ActionResult<Note> Get(int id)
+        public ActionResult<NoteDto> Get(int id)
         {
-            var note = GetNoteById(id);
-
+            var note = _noteRepository.GetNote(id);
             if (note == null)
             {
                 return NotFound();
             }
             else
             {
-                return Ok(note);
+                return Ok(Mapper.Map<NoteDto>(note));
             }
         }
 
@@ -105,20 +113,13 @@ namespace NoteApi.Controllers
                 return BadRequest();
             }
 
-
-            var originalNote = GetNoteById(id);
-
+            var originalNote = _noteRepository.GetNote(id);
             if (originalNote == null)
             {
                 return NotFound();
             }
 
-            var noteToPatch = new UpdateNoteDto()
-            {
-                Title = originalNote.Title,
-                Content = originalNote.Content,
-            };
-
+            var noteToPatch = Mapper.Map<UpdateNoteDto>(originalNote);
             patchDoc.ApplyTo(noteToPatch, ModelState);
 
             if (!ModelState.IsValid)
@@ -126,10 +127,13 @@ namespace NoteApi.Controllers
                 return BadRequest();
             }
 
-            originalNote.Title = noteToPatch.Title;
-            originalNote.Content = noteToPatch.Content;
+            Mapper.Map(noteToPatch, originalNote);
 
-            _context.SaveChanges();
+            if (!_noteRepository.Save())
+            {
+                return StatusCode(500, "A problem happened while saving your request");
+            }
+
             return NoContent();
         }
 
@@ -166,10 +170,14 @@ namespace NoteApi.Controllers
                 return BadRequest();
             }
 
-            var noteEntity = _context.Notes.Add(new Note(note));
-            _context.SaveChanges();
+            var finalNote = Mapper.Map<Note>(note);
+            _noteRepository.AddNote(finalNote);
+            if (!_noteRepository.Save())
+            {
+                return StatusCode(500, "A problem happened while saving your request");
+            }
 
-            return CreatedAtRoute("GetNote", new { id = noteEntity.Entity.Id }, noteEntity.Entity);
+            return CreatedAtRoute("GetNote", new { id = finalNote.Id }, finalNote);
         }
 
         /// <summary>
@@ -204,24 +212,21 @@ namespace NoteApi.Controllers
                 return BadRequest();
             }
 
-            var originalNote = GetNoteById(id);
-
+            var originalNote = _noteRepository.GetNote(id);
             if (originalNote == null)
             {
                 return NotFound();
             }
 
-            originalNote.Title = note.Title;
-            originalNote.Content = note.Content;
+            Mapper.Map(note, originalNote);
 
-            _context.SaveChanges();
+            if (!_noteRepository.Save())
+            {
+                return StatusCode(500, "A problem happened while saving your request");
+            }
 
             return NoContent();
         }
 
-        private Note GetNoteById(int id)
-        {
-            return _context.Notes.FirstOrDefault(n => n.Id == id);
-        }
     }
 }
